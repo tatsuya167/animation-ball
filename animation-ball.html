@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Crush Blocks</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body id="body" onload="draw()">
+<div class="div">
+	<canvas id="myCanvas" width="560" height="420"></canvas>
+
+	<input id="start_button" type="button" value="START" onclick="startPlayGames()"></input>
+</div>
+
+<script type="text/javascript">
+	console.log("JavaScript is supported")
+	
+		var interval;
+		// insert java code here
+		var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+		var x = canvas.width/2;
+		var y = canvas.height-30;
+		var ballRadius = 10; //change when difined the wall
+		var dx = 3;
+		var dy = -3;
+		// var code for paddle
+		var paddleHeight = 10;
+		var paddleWidth = 75;
+		var resetHeight = paddleHeight;
+		var paddleX = (canvas.width-paddleWidth)/2;
+		var rightPressed = false;
+		var leftPressed = false;
+		var	bounce = false;
+		//for bricks(block)
+		var brickRowCount = 3;
+		var brickColumnCount = 6;
+		var brickWidth = 75;
+		var brickHeight = 20;
+		var brickPadding = 10;
+		var brickOffsetTop = 30;
+		var brickOffsetLeft = 30;
+		//code for bricks
+		var bricks = [];							// for refreshing to create blocks
+		for(var i = 0; i < brickColumnCount; i++){ 
+			bricks[i] = []
+			for(var j = 0; j < brickRowCount; j++){
+				bricks[i][j] = { x: 0, y: 0, status : 1};	// defined the status to decide whether block is gone
+			}
+		}
+		//code for score
+		var score = 0;
+		//code for result
+		var result = 0;
+
+		document.addEventListener("keydown", keyDownHandler, false); // when u click it works
+		document.addEventListener("keyup", keyUpHandler, false); //(type, function, false:normally)
+		document.getElementById("myCanvas").addEventListener("mouseover", mouseMoveHandler, false);
+		document.getElementById("body").addEventListener("mousemove", mouseMoveHandler, false);
+
+		function keyDownHandler(e){
+			if(e.key == "Right" || e.key == "ArrowRight"){ //identify which you clicked 
+				rightPressed = true;
+			}
+			if(e.key == "left" || e.key == "ArrowLeft"){
+				leftPressed = true;
+			}
+		}
+
+		function keyUpHandler(e){
+			if(e.key == "Right" || e.key == "ArrowRight"){ //identify if your finger leave from keys
+				rightPressed = false;
+			}
+			if(e.key == "left" || e.key == "ArrowLeft"){
+				leftPressed = false;
+			}
+		}
+		// for moving paddle with cursor
+		// document.addEventListener("mouseover", mouseMoveHandler, false); // need fix here
+
+		function mouseMoveHandler(e){
+			var relativeX = e.clientX - canvas.offsetLeft;		//defined var = cursor position - offsetleft;
+			console.log("here"+relativeX);//delete
+				if(relativeX > 0 && relativeX < canvas.width){	// check if this var in an area
+				console.log(e.clientX);	
+				paddleX = relativeX - brickWidth/2;			//overwrite
+			}
+		}
+
+		function collisionDetection(){
+			for(var i = 0; i < brickColumnCount; i++){
+				for(var j = 0; j < brickRowCount; j++){
+					var b = bricks[i][j];
+					if(b.status == 1){			//check if the block shows
+						if(x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight){
+							dy = -dy;
+							b.status = 0;		//the block should be gone anywhere
+							score += 10;			//increase the score point
+							if(score == brickRowCount*brickColumnCount*10) {
+								result = 1;
+								setTimeout(victoryAlert, 300)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		function victoryAlert(){
+			alert("YOU WIN, CONGRATULATIONS!");
+			document.location.reload();		// reload and restart game
+		}
+		function loserAlert(){
+			result = 0;
+			alert("GAME OVER");
+			document.location.reload();
+			console.log("aaaaasd")
+			clearInterval(interval); // needed for Chrome to end game
+		}
+
+		function drawScore(){
+			ctx.font = "16px Arial";				// setting the font type
+			ctx.fillStyle = "gray";
+			ctx.fillText("Score: " + score, 8, 20);	//("text"+variable, x, y)
+		}
+
+		function drawResult(){
+			if(result == 1){
+				paddleX = (canvas.width-paddleWidth)/2;
+				ctx.font = "30px Arial";
+				ctx.fillStyle = "red";
+				ctx.fillText("Score: " + score, paddleX, canvas.height/2);
+				ctx.font = "45px Arial";
+				ctx.fillStyle = "green";
+				ctx.fillText("VICTORY ", paddleX, canvas.height/2+50);
+			}
+			if(result == 2){
+				paddleX = (canvas.width-paddleWidth)/2;
+				ctx.font = "30px Arial";
+				ctx.fillStyle = "red";
+				ctx.fillText("Score: " + score, paddleX, canvas.height/2);
+				ctx.font = "45px Arial";
+				ctx.fillStyle = "blue";
+				ctx.fillText("Loser ", paddleX, canvas.height/2+50);
+			}
+		}
+
+		function drawBall(){
+			ctx.beginPath();
+			ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+			ctx.fillStyle = "#0095DD"
+			ctx.fill();
+			ctx.closePath();
+		}
+
+		function drawPaddle(){
+			bouncePaddle();
+			ctx.beginPath();
+			ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth,paddleHeight);
+			ctx.fillStyle = "green"
+			ctx.fill();
+			ctx.closePath();
+		}
+
+		function bouncePaddle(){		
+			if(bounce){
+				paddleHeight /=2;
+				bounce = false ;
+				setTimeout(resetBounce,100)
+			}
+		}
+
+		function resetBounce(){
+			paddleHeight = resetHeight;
+		}
+
+		function drawBricks(){
+			for(var i = 0; i < brickColumnCount; i++){
+				for(var j = 0; j < brickRowCount; j++){
+					if(bricks[i][j].status == 1){
+						var brickX = (i*(brickWidth + brickPadding)) + brickOffsetLeft;
+						var brickY =(j*(brickHeight + brickPadding)) + brickOffsetTop;
+						bricks[i][j].x = brickX;
+						bricks[i][j].y = brickY;
+						ctx.beginPath();
+						ctx.rect(brickX, brickY, brickWidth, brickHeight);
+						ctx.fillStyle = "green";
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
+			}
+		}
+		//main
+		function draw(){
+			ctx.clearRect(0, 0, canvas.width, canvas.height); //clear this area ->(top-left:x,y,~bottom-right:x,y)
+			// drawBricks();
+			drawBall();
+			drawPaddle();
+			drawScore();
+			collisionDetection();
+			drawResult();
+			// for ball
+			if(y + dy < ballRadius){ // defined for collision detection and modified to be looks like better for user;
+				dy = -dy;
+			}
+			else if(y + dy > canvas.height - ballRadius){
+				if(x > paddleX - ballRadius && x < paddleX + paddleWidth + ballRadius){
+					dy = -dy;
+					bounce = true;
+				}
+
+				else{ 							// setting for gameover
+					result = 2;
+					drawResult();
+					setTimeout(loserAlert, 4);
+					// alert("GAME OVER");
+					// clearInterval(interval); // needed for Chrome to end game
+					// document.location.reload();
+					
+				}
+			}
+			if(x + dx > canvas.width - ballRadius || x + dx < ballRadius){ // same thing as above
+				dx = -dx;
+			}
+
+			//for paddle
+			if(rightPressed && paddleX < canvas.width-paddleWidth){
+				paddleX += 2;
+			}
+			else if(leftPressed && paddleX > 0){
+				paddleX -= 2;
+			}
+			x += dx;
+			y += dy;
+		}
+
+		function startPlayGames(){
+			interval = setInterval(draw,10); // use
+		}	
+	
+	
+</script>
+
+</body>
+</html>

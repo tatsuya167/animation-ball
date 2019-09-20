@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Gamedev Canvas Workshop</title>
+	<style>
+		*{padding: 0px; margin: 0px;}
+		canvas{background: #eee; display:block; margin: 0 auto;}
+	</style>
+</head>
+<body onload="startdrawing()">
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script type="text/javascript">
+	console.log("JavaScript is supported")
+
+	
+
+	function startdrawing(){
+	// insert java code here
+	var canvas = document.getElementById("myCanvas");
+	console.log(canvas);
+	var ctx = canvas.getContext("2d");
+	
+	ctx.beginPath(); // all commands belong from this line to closepath()
+	ctx.rect(20, 40, 50, 50); //this code defined the square (num,num <- point at top left-corner,width,height)
+	ctx.fillStyle = "#FF0000";//this line keeps colour for fill() method
+	ctx.fill();
+	ctx.closePath();
+
+	ctx.beginPath();
+	ctx.arc(240, 160, 20, 0, Math.PI*2, false); //arc(x,y,r,sAngle,eAngle,counterclockwise) 0 is at the 3 o'clock
+	ctx.fillStyle = "green";
+	ctx.fill();
+	ctx.closePath();
+		
+	ctx.beginPath();
+	ctx.rect(160, 10, 100, 40);
+	ctx.strokeStyle = "rgba(0, 0, 255, 0.5)"; //blue
+	ctx.stroke();
+	ctx.closePath();
+	
+	}
+	
+	
+</script>
+
+</body>
+</html>
+
